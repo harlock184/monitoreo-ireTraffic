@@ -1,4 +1,4 @@
-
+<!-- 
 <!DOCTYPE html>
 <html>
   <head>
@@ -51,6 +51,92 @@
           marker.setPosition(nuevaPosicion);
           map.setCenter(nuevaPosicion);
         }, 10000);
+      }
+
+      window.onload = initMap;
+    </script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Monitoreo en Tiempo Real</title>
+    <meta charset="utf-8" />
+    <style>
+      #map {
+        height: 90vh;
+        width: 100%;
+      }
+    </style>
+
+    <!-- Google Maps -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCtPd5A0Izvtps_f0-7tzg_x-DF-bxeAtA"></script>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  </head>
+
+  <body>
+    <h2>Ubicación en tiempo real (Firebase)</h2>
+    <div id="map"></div>
+
+    <script>
+      // Configuración de Firebase
+      const firebaseConfig = {
+        apiKey: "AIzaSyCtUqg04UVF4rJImfPtYN0CNfdU5ZJYV-4",
+        authDomain: "iretraffic-6dbb7.firebaseapp.com",
+        databaseURL: "https://iretraffic-6dbb7-default-rtdb.firebaseio.com",
+        projectId: "iretraffic-6dbb7",
+        storageBucket: "iretraffic-6dbb7.firebasestorage.app",
+        messagingSenderId: "646057309348",
+        appId: "1:646057309348:web:irrelevante",
+      };
+
+      // Inicializar Firebase
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      let map, marker;
+
+      function initMap() {
+        const center = { lat: 20.674, lng: -103.387 }; // Valor por defecto (Guadalajara)
+
+        map = new google.maps.Map(document.getElementById("map"), {
+          center,
+          zoom: 15,
+        });
+
+        marker = new google.maps.Marker({
+          position: center,
+          map: map,
+        });
+
+        // Escuchar nuevas ubicaciones en Firebase
+        const locationsRef = db.ref("locations");
+
+        // Escucha la última entrada agregada
+        locationsRef.limitToLast(1).on("child_added", (snapshot) => {
+          const data = snapshot.val();
+          const nuevaPosicion = {
+            lat: data.latitude,
+            lng: data.longitude,
+          };
+          marker.setPosition(nuevaPosicion);
+          map.setCenter(nuevaPosicion);
+        });
+
+        // También actualiza si cambian los valores (por ejemplo si sobrescribe)
+        locationsRef.limitToLast(1).on("child_changed", (snapshot) => {
+          const data = snapshot.val();
+          const nuevaPosicion = {
+            lat: data.latitude,
+            lng: data.longitude,
+          };
+          marker.setPosition(nuevaPosicion);
+          map.setCenter(nuevaPosicion);
+        });
       }
 
       window.onload = initMap;
